@@ -3,7 +3,7 @@
  * Plugin Name:       DimensionVista Converters
  * Plugin URI:        https://dimensionvista.com/
  * Description:       Server-rendered unit converters for DimensionVista: answer box with fractions, live converter, scaled ruler visual, charts, FAQ and schema. Shortcodes: [dv_converter], [dv_chart], [dv_scale], [dv_faq], [dv_facts], [dv_breadcrumbs].
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Rajesh Kumar
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DV_CONVERTERS_VERSION', '1.0.3' );
+define( 'DV_CONVERTERS_VERSION', '1.0.4' );
 define( 'DV_CONVERTERS_URL', plugin_dir_url( __FILE__ ) );
 define( 'DV_CONVERTERS_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -187,6 +187,17 @@ add_filter(
 		return DV_Context::$active && apply_filters( 'dv_converters_no_toc', true ) ? false : $apply;
 	},
 	99
+);
+
+// Marker class so the stylesheet can tidy tool pages (e.g. hide Easy TOC).
+add_filter(
+	'body_class',
+	function ( $classes ) {
+		if ( DV_Context::$active ) {
+			$classes[] = 'dv-page';
+		}
+		return $classes;
+	}
 );
 
 DV_Schema::init();

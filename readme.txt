@@ -2,7 +2,7 @@
 Contributors: rajeshkumar-dv
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPL-2.0-or-later
 
 Server-rendered measurement converters: answer box (fraction first), live converter,
@@ -98,3 +98,9 @@ dv_converters_no_sidebar, dv_converters_no_toc, dv_converters_drop_article_schem
 - New pairs: feet to meters, meters to feet. Exact note: 1 foot = exactly 0.3048 m.
 - [dv_facts basis="foot"] states the foot definition.
 - Breadcrumbs link to a tool page only when that page exists.
+
+== 1.0.4 ==
+
+- Tool pages get body class dv-page; Easy TOC is hidden on them (works for posts too).
+- Rank Math BlogPosting/NewsArticle nodes are dropped like Article.
+- [dv_scale] auto-pick now shows near matches plus the two nearest shorter and longer references.
