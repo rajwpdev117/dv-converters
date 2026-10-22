@@ -3,7 +3,7 @@
  * Plugin Name:       DimensionVista Converters
  * Plugin URI:        https://dimensionvista.com/
  * Description:       Server-rendered unit converters for DimensionVista: answer box with fractions, live converter, scaled ruler visual, charts, FAQ and schema. Shortcodes: [dv_converter], [dv_chart], [dv_scale], [dv_faq], [dv_facts], [dv_breadcrumbs].
- * Version:           1.0.4
+ * Version:           1.0.5
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Rajesh Kumar
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DV_CONVERTERS_VERSION', '1.0.4' );
+define( 'DV_CONVERTERS_VERSION', '1.0.5' );
 define( 'DV_CONVERTERS_URL', plugin_dir_url( __FILE__ ) );
 define( 'DV_CONVERTERS_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -199,5 +199,20 @@ add_filter(
 		return $classes;
 	}
 );
+
+// Updates from the private GitHub repository (Releases). Add to wp-config.php:
+// define( 'DV_CONVERTERS_GITHUB_TOKEN', 'github_pat_...' ); (read-only, Contents: read).
+$dv_puc = DV_CONVERTERS_DIR . 'lib/plugin-update-checker/plugin-update-checker.php';
+if ( file_exists( $dv_puc ) ) {
+	require_once $dv_puc;
+	$dv_update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+		'https://github.com/rajwpdev117/dv-converters/',
+		__FILE__,
+		'dv-converters'
+	);
+	if ( defined( 'DV_CONVERTERS_GITHUB_TOKEN' ) && DV_CONVERTERS_GITHUB_TOKEN ) {
+		$dv_update_checker->setAuthentication( DV_CONVERTERS_GITHUB_TOKEN );
+	}
+}
 
 DV_Schema::init();
