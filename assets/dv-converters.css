@@ -1,5 +1,5 @@
 /* DimensionVista Converters — brand: navy #1E3A5F, tape yellow #F5B700 (measured items only), answer tint #FFF7DB. */
-.dv-tool, .dv-chart, .dv-faq, .dv-facts, .dv-crumbs {
+.dv-tool, .dv-chart, .dv-scale, .dv-faq, .dv-facts, .dv-crumbs {
 	--dv-navy: #1E3A5F;
 	--dv-yellow: #F5B700;
 	--dv-tint: #FFF7DB;
@@ -129,3 +129,14 @@
 	.dv-v-top, .dv-v-bottom { font-size: 25px; }
 	.dv-visual { padding-top: 8px; }
 }
+
+/* Scale comparison */
+.dv-scale { margin: 1.5em 0 2em; }
+.dv-sc { display: block; width: 100%; height: auto; }
+.dv-s-label { fill: var(--dv-ink); font-size: 13px; font-family: inherit; }
+.dv-s-label--target { font-weight: 700; fill: var(--dv-navy); }
+.dv-s-val { fill: var(--dv-slate); font-size: 12px; font-family: inherit; font-variant-numeric: tabular-nums; }
+.dv-s-bar { fill: #94A3B8; }
+.dv-s-bar--target { fill: var(--dv-yellow); stroke: var(--dv-navy); stroke-width: 1.5; }
+.dv-scale figcaption { font-size: .8125rem; color: var(--dv-slate); margin-top: .35em; }
+@media (max-width: 560px) { .dv-s-label { font-size: 17px; } .dv-s-val { font-size: 15px; } }
