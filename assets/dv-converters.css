@@ -140,3 +140,6 @@
 .dv-s-bar--target { fill: var(--dv-yellow); stroke: var(--dv-navy); stroke-width: 1.5; }
 .dv-scale figcaption { font-size: .8125rem; color: var(--dv-slate); margin-top: .35em; }
 @media (max-width: 560px) { .dv-s-label { font-size: 17px; } .dv-s-val { font-size: 15px; } }
+
+/* Tool pages carry their own structure: no auto table of contents. */
+.dv-page #ez-toc-container { display: none; }
