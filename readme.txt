@@ -2,7 +2,7 @@
 Contributors: rajeshkumar-dv
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPL-2.0-or-later
 
 Server-rendered measurement converters: answer box (fraction first), live converter,
@@ -33,6 +33,12 @@ scaled ruler visual, HTML chart, FAQ and schema. Built for dimensionvista.com
 
 [dv_chart from="in" to="mm" start="1/64" end="1" step="1/64"]
   Fractional inch to mm chart. These values are exact and shown in full.
+
+[dv_scale value="60" unit="ft"]
+  To-scale comparison bars: your length against up to 4 reference lengths (official or nominal,
+  e.g. bowling lane 60 ft, baseball pitching distance 60 ft 6 in, 40 ft shipping container).
+  Options: refs="bowling,pitch,container40" (default: the nearest shorter and longer ones)
+  show="ft,m" (units printed beside each bar). Extend with the dv_converters_scale_refs filter.
 
 [dv_faq]
 [dv_q q="How many inches is 8 mm?"]8 mm is about 5/16 inch (slightly more).[/dv_q]
@@ -70,7 +76,7 @@ Without Rank Math the plugin prints its own JSON-LD.
 
 == Adding a pair ==
 
-mm→in, cm→in and in→mm are registered. Add more with the dv_converters_pairs filter
+mm→in, cm→in, in→mm, ft→m and m→ft are registered. Add more with the dv_converters_pairs filter
 (units: mm, cm, m, in, ft; add units with dv_converters_units).
 
 == Accuracy ==
@@ -82,6 +88,13 @@ checked to give identical results to the server.
 
 == Tool page clean-up (automatic since 1.0.1) ==
 
-On pages with these shortcodes the plugin removes the GeneratePress sidebar and Rank Math's
-default Article schema (filters dv_converters_no_sidebar, dv_converters_drop_article_schema).
-Easy TOC: untick Pages under auto-insert in Settings > Table of Contents.
+On pages with these shortcodes the plugin removes the GeneratePress sidebar, Easy TOC's
+table of contents and Rank Math's default Article schema. Turn each off with the filters
+dv_converters_no_sidebar, dv_converters_no_toc, dv_converters_drop_article_schema.
+
+== 1.0.3 ==
+
+- New [dv_scale] to-scale comparison of a length against reference lengths.
+- New pairs: feet to meters, meters to feet. Exact note: 1 foot = exactly 0.3048 m.
+- [dv_facts basis="foot"] states the foot definition.
+- Breadcrumbs link to a tool page only when that page exists.
