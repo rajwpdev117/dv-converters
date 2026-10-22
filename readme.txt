@@ -2,7 +2,7 @@
 Contributors: rajeshkumar-dv
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPL-2.0-or-later
 
 Server-rendered measurement converters: answer box (fraction first), live converter,
@@ -104,3 +104,7 @@ dv_converters_no_sidebar, dv_converters_no_toc, dv_converters_drop_article_schem
 - Tool pages get body class dv-page; Easy TOC is hidden on them (works for posts too).
 - Rank Math BlogPosting/NewsArticle nodes are dropped like Article.
 - [dv_scale] auto-pick now shows near matches plus the two nearest shorter and longer references.
+
+== 1.0.5 ==
+
+- Restores the GitHub updater that was dropped from 1.0.3 and 1.0.4. Install this version once by upload; later versions update from the WordPress Updates screen.
