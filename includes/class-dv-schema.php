@@ -105,7 +105,7 @@ class DV_Schema {
 		// Tool pages are not articles: drop Rank Math's default Article node.
 		if ( apply_filters( 'dv_converters_drop_article_schema', true ) ) {
 			foreach ( $data as $k => $node ) {
-				if ( is_array( $node ) && isset( $node['@type'] ) && 'Article' === $node['@type'] ) {
+				if ( is_array( $node ) && isset( $node['@type'] ) && in_array( $node['@type'], array( 'Article', 'BlogPosting', 'NewsArticle' ), true ) ) {
 					unset( $data[ $k ] );
 				}
 			}
