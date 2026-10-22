@@ -104,6 +104,7 @@ class DV_Scale {
 	/** Pick references closest to the target on a log scale (up to 2 shorter, 2 longer). */
 	public static function auto( $mm_f ) {
 		$all   = self::refs();
+		$near  = array();
 		$short = array();
 		$long  = array();
 		foreach ( $all as $id => $ref ) {
@@ -113,12 +114,13 @@ class DV_Scale {
 			} elseif ( $v > $mm_f * 1.03 ) {
 				$long[ $id ] = $v / $mm_f;
 			} else {
-				$short[ $id ] = 1.0; // Near match: shown first.
+				$near[ $id ] = abs( $v - $mm_f );
 			}
 		}
+		asort( $near );
 		asort( $short );
 		asort( $long );
-		return array_merge( array_slice( array_keys( $short ), 0, 2 ), array_slice( array_keys( $long ), 0, 2 ) );
+		return array_merge( array_slice( array_keys( $near ), 0, 2 ), array_slice( array_keys( $short ), 0, 2 ), array_slice( array_keys( $long ), 0, 2 ) );
 	}
 
 	public static function sc_scale( $atts ) {
