@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       DimensionVista Converters
  * Plugin URI:        https://dimensionvista.com/
- * Description:       Server-rendered unit converters for DimensionVista: answer box with fractions, live converter, scaled ruler visual, charts, FAQ and schema. Shortcodes: [dv_converter], [dv_chart], [dv_faq], [dv_facts], [dv_breadcrumbs].
- * Version:           1.0.2
+ * Description:       Server-rendered unit converters for DimensionVista: answer box with fractions, live converter, scaled ruler visual, charts, FAQ and schema. Shortcodes: [dv_converter], [dv_chart], [dv_scale], [dv_faq], [dv_facts], [dv_breadcrumbs].
+ * Version:           1.0.3
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Rajesh Kumar
@@ -16,13 +16,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DV_CONVERTERS_VERSION', '1.0.2' );
+define( 'DV_CONVERTERS_VERSION', '1.0.3' );
 define( 'DV_CONVERTERS_URL', plugin_dir_url( __FILE__ ) );
 define( 'DV_CONVERTERS_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once DV_CONVERTERS_DIR . 'includes/class-dv-math.php';
 require_once DV_CONVERTERS_DIR . 'includes/class-dv-visual.php';
 require_once DV_CONVERTERS_DIR . 'includes/class-dv-render.php';
+require_once DV_CONVERTERS_DIR . 'includes/class-dv-scale.php';
 require_once DV_CONVERTERS_DIR . 'includes/class-dv-schema.php';
 
 /**
@@ -62,6 +63,26 @@ function dv_converters_pairs() {
 			'value_slug' => '%s-inches-to-mm',
 			'app_name'   => 'inches to mm converter',
 		),
+		'ft-m'  => array(
+			'from'       => 'ft',
+			'to'         => 'm',
+			'tool_path'  => '/feet-to-meters/',
+			'tool_label' => 'feet to meters',
+			'hub_path'   => '/length/',
+			'hub_label'  => 'Length',
+			'value_slug' => '%s-feet-to-meters',
+			'app_name'   => 'feet to meters converter',
+		),
+		'm-ft'  => array(
+			'from'       => 'm',
+			'to'         => 'ft',
+			'tool_path'  => '/meters-to-feet/',
+			'tool_label' => 'meters to feet',
+			'hub_path'   => '/length/',
+			'hub_label'  => 'Length',
+			'value_slug' => '%s-meters-to-feet',
+			'app_name'   => 'meters to feet converter',
+		),
 	);
 	return apply_filters( 'dv_converters_pairs', $pairs );
 }
@@ -91,7 +112,7 @@ class DV_Context {
 			return;
 		}
 		$content = $post->post_content;
-		$tags    = array( 'dv_converter', 'dv_chart', 'dv_faq', 'dv_facts', 'dv_breadcrumbs' );
+		$tags    = array( 'dv_converter', 'dv_chart', 'dv_scale', 'dv_faq', 'dv_facts', 'dv_breadcrumbs' );
 		foreach ( $tags as $tag ) {
 			if ( has_shortcode( $content, $tag ) ) {
 				self::$active = true;
@@ -152,7 +173,7 @@ add_filter(
 	5
 );
 
-// Tool pages are clean: no sidebar (GeneratePress). Easy TOC: turn off auto-insert for Pages in its settings.
+// Tool pages are clean: no sidebar (GeneratePress) and no auto table of contents (Easy TOC).
 add_filter(
 	'generate_sidebar_layout',
 	function ( $layout ) {
@@ -160,22 +181,12 @@ add_filter(
 	},
 	99
 );
+add_filter(
+	'ez_toc_maybe_apply_the_content_filter',
+	function ( $apply ) {
+		return DV_Context::$active && apply_filters( 'dv_converters_no_toc', true ) ? false : $apply;
+	},
+	99
+);
 
 DV_Schema::init();
-
-/**
- * Updates from the private GitHub repo (Dashboard > Updates).
- * Add this line to wp-config.php, with a fine-grained read-only token for this repo:
- *   define( 'DV_CONVERTERS_GITHUB_TOKEN', 'github_pat_...' );
- */
-if ( is_admin() && file_exists( DV_CONVERTERS_DIR . 'lib/plugin-update-checker/plugin-update-checker.php' ) ) {
-	require_once DV_CONVERTERS_DIR . 'lib/plugin-update-checker/plugin-update-checker.php';
-	$dv_updater = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-		'https://github.com/rajwpdev117/dv-converters/',
-		__FILE__,
-		'dv-converters'
-	);
-	if ( defined( 'DV_CONVERTERS_GITHUB_TOKEN' ) && DV_CONVERTERS_GITHUB_TOKEN ) {
-		$dv_updater->setAuthentication( DV_CONVERTERS_GITHUB_TOKEN );
-	}
-}
