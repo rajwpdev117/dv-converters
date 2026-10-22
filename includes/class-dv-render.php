@@ -15,6 +15,7 @@ class DV_Render {
 	public static function register() {
 		add_shortcode( 'dv_converter', array( __CLASS__, 'sc_converter' ) );
 		add_shortcode( 'dv_chart', array( __CLASS__, 'sc_chart' ) );
+		add_shortcode( 'dv_scale', array( 'DV_Scale', 'sc_scale' ) );
 		add_shortcode( 'dv_faq', array( __CLASS__, 'sc_faq' ) );
 		add_shortcode( 'dv_q', array( __CLASS__, 'sc_q' ) );
 		add_shortcode( 'dv_facts', array( __CLASS__, 'sc_facts' ) );
@@ -144,9 +145,16 @@ class DV_Render {
 		list( $s, $t ) = self::dec_with_sign( $res, $a['dp'], $to['short'] );
 		$ex   = DV_Math::exact_decimal( $res );
 		$main = sprintf( '%s %s <b>%s</b>', esc_html( $in_text ), $s, esc_html( null !== $ex ? $ex . ' ' . $to['short'] : $t ) );
-		$note = null !== $ex && ( 'in' === $a['from'] || 'in' === $a['to'] )
-			? esc_html__( 'Exact, because 1 inch is defined as exactly 25.4 mm', 'dv-converters' )
-			: ( null !== $ex ? esc_html__( 'Exact', 'dv-converters' ) : esc_html( sprintf( /* translators: %d: decimals */ __( 'Rounded to %d decimal places', 'dv-converters' ), $a['dp'] ) ) );
+		$is_ft = 'ft' === $a['from'] || 'ft' === $a['to'];
+		if ( null !== $ex && $is_ft ) {
+			$note = esc_html__( 'Exact, because 1 foot is defined as exactly 0.3048 m', 'dv-converters' );
+		} elseif ( null !== $ex && ( 'in' === $a['from'] || 'in' === $a['to'] ) ) {
+			$note = esc_html__( 'Exact, because 1 inch is defined as exactly 25.4 mm', 'dv-converters' );
+		} elseif ( null !== $ex ) {
+			$note = esc_html__( 'Exact', 'dv-converters' );
+		} else {
+			$note = esc_html( sprintf( /* translators: %d: decimals */ __( 'Rounded to %d decimal places', 'dv-converters' ), $a['dp'] ) );
+		}
 		return array( 'main' => $main, 'note' => $note );
 	}
 
@@ -416,6 +424,7 @@ class DV_Render {
 		$a = shortcode_atts(
 			array(
 				'updated'   => '',
+				'basis'     => 'inch',
 				'precision' => __( 'Decimals are rounded to 4 places in the converter and 3 in the chart; fractions go to the nearest 1/64″.', 'dv-converters' ),
 			),
 			$atts,
@@ -423,10 +432,14 @@ class DV_Render {
 		);
 		$nist = apply_filters( 'dv_converters_nist_url', 'https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b9' );
 		$o    = '<aside class="dv-facts"><p>';
+		$msg  = 'foot' === $a['basis']
+			/* translators: %s: link to NIST */
+			? __( 'How the numbers work: 1 foot is defined as exactly 0.3048 m, which is 12 inches of 25.4 mm each (%s), so every result here is calculated from that factor with exact arithmetic.', 'dv-converters' )
+			/* translators: %s: link to NIST */
+			: __( 'How the numbers work: 1 inch is defined as exactly 25.4 mm (%s), so every result here is calculated from that factor with exact arithmetic.', 'dv-converters' );
 		$o   .= wp_kses(
 			sprintf(
-				/* translators: %s: link to NIST */
-				__( 'How the numbers work: 1 inch is defined as exactly 25.4 mm (%s), so every result here is calculated from that factor with exact arithmetic.', 'dv-converters' ),
+				$msg,
 				'<a href="' . esc_url( $nist ) . '" rel="noopener" target="_blank">NIST SP 811</a>'
 			),
 			array( 'a' => array( 'href' => true, 'rel' => true, 'target' => true ) )
@@ -458,7 +471,9 @@ class DV_Render {
 		if ( '' === $c['value'] ) {
 			$items[] = array( $p['tool_label'], $here );
 		} else {
-			$items[] = array( $p['tool_label'], home_url( $p['tool_path'] ) );
+			if ( get_page_by_path( trim( $p['tool_path'], '/' ) ) ) {
+				$items[] = array( $p['tool_label'], home_url( $p['tool_path'] ) );
+			}
 			$r       = DV_Math::parse( $c['value'] );
 			$items[] = array( '' !== $c['label'] ? $c['label'] : ( $r ? self::value_text( $r, $c['from'] ) : $c['value'] ), $here );
 		}
