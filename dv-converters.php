@@ -3,7 +3,7 @@
  * Plugin Name:       DimensionVista Converters
  * Plugin URI:        https://dimensionvista.com/
  * Description:       Server-rendered unit converters for DimensionVista: answer box with fractions, live converter, scaled ruler visual, charts, FAQ and schema. Shortcodes: [dv_converter], [dv_chart], [dv_scale], [dv_faq], [dv_facts], [dv_breadcrumbs]. Length (mm, cm, m, in, ft) and weight (g, kg, lb, oz) units.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Rajesh Kumar
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DV_CONVERTERS_VERSION', '1.1.0' );
+define( 'DV_CONVERTERS_VERSION', '1.1.1' );
 define( 'DV_CONVERTERS_URL', plugin_dir_url( __FILE__ ) );
 define( 'DV_CONVERTERS_DIR', plugin_dir_path( __FILE__ ) );
 
