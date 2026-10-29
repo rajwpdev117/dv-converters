@@ -2,7 +2,7 @@
 Contributors: rajeshkumar-dv
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPL-2.0-or-later
 
 Server-rendered measurement converters: answer box (fraction first), live converter,
@@ -114,6 +114,9 @@ dv_converters_no_sidebar, dv_converters_no_toc, dv_converters_drop_article_schem
 == 1.0.5 ==
 
 - Restores the GitHub updater that was dropped from 1.0.3 and 1.0.4. Install this version once by upload; later versions update from the WordPress Updates screen.
+
+== 1.1.1 ==
+* Maintenance: automated release pipeline test, no functional changes.
 
 == 1.1.0 ==
 
