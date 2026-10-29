@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       DimensionVista Converters
  * Plugin URI:        https://dimensionvista.com/
- * Description:       Server-rendered unit converters for DimensionVista: answer box with fractions, live converter, scaled ruler visual, charts, FAQ and schema. Shortcodes: [dv_converter], [dv_chart], [dv_scale], [dv_faq], [dv_facts], [dv_breadcrumbs].
- * Version:           1.0.5
+ * Description:       Server-rendered unit converters for DimensionVista: answer box with fractions, live converter, scaled ruler visual, charts, FAQ and schema. Shortcodes: [dv_converter], [dv_chart], [dv_scale], [dv_faq], [dv_facts], [dv_breadcrumbs]. Length (mm, cm, m, in, ft) and weight (g, kg, lb, oz) units.
+ * Version:           1.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Rajesh Kumar
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DV_CONVERTERS_VERSION', '1.0.5' );
+define( 'DV_CONVERTERS_VERSION', '1.1.0' );
 define( 'DV_CONVERTERS_URL', plugin_dir_url( __FILE__ ) );
 define( 'DV_CONVERTERS_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -82,6 +82,50 @@ function dv_converters_pairs() {
 			'hub_label'  => 'Length',
 			'value_slug' => '%s-meters-to-feet',
 			'app_name'   => 'meters to feet converter',
+		),
+		'kg-lb' => array(
+			'from'       => 'kg',
+			'to'         => 'lb',
+			'tool_path'  => '/kg-to-lbs/',
+			'tool_label' => 'kg to lbs',
+			'hub_path'   => '/weight/',
+			'hub_label'  => 'Weight',
+			'value_slug' => '%s-kg-to-lbs',
+			'app_name'   => 'kg to lbs converter',
+			'defn'       => '1 pound is defined as exactly 0.45359237 kg',
+		),
+		'lb-kg' => array(
+			'from'       => 'lb',
+			'to'         => 'kg',
+			'tool_path'  => '/lbs-to-kg/',
+			'tool_label' => 'lbs to kg',
+			'hub_path'   => '/weight/',
+			'hub_label'  => 'Weight',
+			'value_slug' => '%s-lbs-to-kg',
+			'app_name'   => 'lbs to kg converter',
+			'defn'       => '1 pound is defined as exactly 0.45359237 kg',
+		),
+		'g-oz'  => array(
+			'from'       => 'g',
+			'to'         => 'oz',
+			'tool_path'  => '/grams-to-ounces/',
+			'tool_label' => 'grams to ounces',
+			'hub_path'   => '/weight/',
+			'hub_label'  => 'Weight',
+			'value_slug' => '%s-grams-to-ounces',
+			'app_name'   => 'grams to ounces converter',
+			'defn'       => '1 ounce is defined as exactly 28.349523125 g',
+		),
+		'oz-g'  => array(
+			'from'       => 'oz',
+			'to'         => 'g',
+			'tool_path'  => '/ounces-to-grams/',
+			'tool_label' => 'ounces to grams',
+			'hub_path'   => '/weight/',
+			'hub_label'  => 'Weight',
+			'value_slug' => '%s-ounces-to-grams',
+			'app_name'   => 'ounces to grams converter',
+			'defn'       => '1 ounce is defined as exactly 28.349523125 g',
 		),
 	);
 	return apply_filters( 'dv_converters_pairs', $pairs );
