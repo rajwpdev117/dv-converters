@@ -1,8 +1,10 @@
 name: Release
-# Push a tag like v1.2.0 (or run manually) to build the plugin zip and publish a GitHub Release.
+# Runs on every push to main. If the plugin's Version: line has no GitHub Release yet,
+# it builds the zip and publishes the release (and its tag) automatically.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:
@@ -10,16 +12,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check tag matches plugin version
+      - name: Read version
+        id: v
+        run: echo "ver=$(grep -m1 -oP 'Version:\s*\K[0-9.]+' dv-converters.php)" >> "$GITHUB_OUTPUT"
+      - name: Already released?
+        id: chk
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          V=$(grep -m1 -oP 'Version:\s*\K[0-9.]+' dv-converters.php)
-          [ "v$V" = "${GITHUB_REF_NAME}" ] || { echo "Tag ${GITHUB_REF_NAME} != plugin version v$V"; exit 1; }
+          if gh release view "v${{ steps.v.outputs.ver }}" >/dev/null 2>&1; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi
       - name: Build zip
+        if: steps.chk.outputs.exists == 'false'
         run: |
           mkdir -p /tmp/pkg/dv-converters
           rsync -a --exclude='.git' --exclude='.github' --exclude='README.md' ./ /tmp/pkg/dv-converters/
           (cd /tmp/pkg && zip -rq "$GITHUB_WORKSPACE/dv-converters.zip" dv-converters)
       - name: Publish release
+        if: steps.chk.outputs.exists == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dv-converters.zip --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "v${{ steps.v.outputs.ver }}" dv-converters.zip --target "$GITHUB_SHA" --title "v${{ steps.v.outputs.ver }}" --generate-notes
