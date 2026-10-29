@@ -2,7 +2,7 @@
 Contributors: rajeshkumar-dv
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.1.0
 License: GPL-2.0-or-later
 
 Server-rendered measurement converters: answer box (fraction first), live converter,
@@ -56,6 +56,12 @@ scaled ruler visual, HTML chart, FAQ and schema. Built for dimensionvista.com
   with [dv_converter] (filter dv_converters_auto_breadcrumbs to turn off). Trail: Home › Length › mm to inches › 8 mm. The Length step appears
   only once a page with the slug "length" exists.
 
+== Weight units ==
+
+Units g, kg, lb and oz work in [dv_converter] and [dv_chart] (exact: 1 lb = 0.45359237 kg, 1 oz = 1/16 lb).
+Example: [dv_converter from="kg" to="lb" value="20" visual="no" label="20 kg"]. Converting to pounds also
+shows "pounds and ounces". Use [dv_facts basis="pound"] for the NIST factor line. No ruler visual for weights.
+
 == Schema ==
 
 With Rank Math active, these nodes join Rank Math's own graph (Organization, WebSite and
@@ -108,3 +114,9 @@ dv_converters_no_sidebar, dv_converters_no_toc, dv_converters_drop_article_schem
 == 1.0.5 ==
 
 - Restores the GitHub updater that was dropped from 1.0.3 and 1.0.4. Install this version once by upload; later versions update from the WordPress Updates screen.
+
+== 1.1.0 ==
+
+- Weight units (g, kg, lb, oz) in [dv_converter] and [dv_chart], with a pounds-and-ounces row when converting to pounds.
+- kg/lb and g/oz tool pairs for breadcrumbs and schema; exact definition on tool pages.
+- [dv_facts basis="pound"] states the pound definition. Length output is unchanged.

@@ -11,7 +11,11 @@
 		cm: { mm: [10n, 1n], short: 'cm', name: 'centimeters' },
 		m: { mm: [1000n, 1n], short: 'm', name: 'meters' },
 		in: { mm: [127n, 5n], short: 'in', name: 'inches' },
-		ft: { mm: [1524n, 5n], short: 'ft', name: 'feet' }
+		ft: { mm: [1524n, 5n], short: 'ft', name: 'feet' },
+		g: { mm: [1n, 1n], short: 'g', name: 'grams', dim: 'mass' },
+		kg: { mm: [1000n, 1n], short: 'kg', name: 'kilograms', dim: 'mass' },
+		lb: { mm: [45359237n, 100000n], short: 'lb', name: 'pounds', dim: 'mass' },
+		oz: { mm: [45359237n, 1600000n], short: 'oz', name: 'ounces', dim: 'mass' }
 	};
 	var MAX_DP = 6;
 	var MAX_VALUE = 100000n;
@@ -29,7 +33,7 @@
 	function parse(raw) {
 		var s = String(raw).toLowerCase().trim()
 			.replace(/⁄/g, '/').replace(/[″"”]/g, '')
-			.replace(/inches|inch|in|mm|cm/g, '').trim();
+			.replace(/inches|inch|in|mm|cm|kg|lbs|lb|oz|g/g, '').trim();
 		var m, r;
 		if (!s) return null;
 		if ((m = s.match(/^(\d{1,6})[\s-]+(\d{1,4})\/(\d{1,4})$/))) {
@@ -117,6 +121,12 @@
 				rows.push([esc('Nearest 1/' + den + '″'), '<b>' + esc(f.text) + '</b> <span class="dv-r__diff">' + esc(d) + '</span>']);
 			});
 		}
+		if (to === 'lb') {
+			var oz = mul(res, [16n, 1n]), whole = oz[0] / (16n * oz[1]);
+			var rest = reduce(oz[0] - whole * 16n * oz[1], oz[1]), dd = decimal(rest, 1);
+			if (dd.text === '16') { whole += 1n; dd = { text: '0', exact: false }; }
+			rows.push(['Pounds and ounces', '<b>' + esc((dd.exact ? '' : '≈ ') + whole.toLocaleString('en-US') + ' lb ' + dd.text + ' oz') + '</b>']);
+		}
 		return '<dl class="dv-r">' + rows.map(function (x) { return '<div><dt>' + x[0] + '</dt><dd>' + x[1] + '</dd></div>'; }).join('') + '</dl>';
 	}
 
@@ -183,7 +193,7 @@
 	/* ---------- wiring ---------- */
 	function initTool(el) {
 		var from = el.getAttribute('data-from'), to = el.getAttribute('data-to');
-		if (!UNITS[from] || !UNITS[to]) return;
+		if (!UNITS[from] || !UNITS[to] || (UNITS[from].dim || 'len') !== (UNITS[to].dim || 'len')) return;
 		var dp = parseInt(el.getAttribute('data-dp'), 10) || 4;
 		var dens = (el.getAttribute('data-fractions') || '16,32,64').split(',').map(Number).filter(Boolean);
 		var input = el.querySelector('.dv-conv__input'), out = el.querySelector('.dv-conv__out');

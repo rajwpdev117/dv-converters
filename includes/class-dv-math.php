@@ -20,8 +20,11 @@ class DV_Math {
 	const MAX_DP = 6;
 
 	/**
-	 * Units, each defined by its exact length in millimetres as a rational.
-	 * The inch is exactly 25.4 mm = 127/5 (NIST SP 811, Appendix B.9).
+	 * Units, each defined by its exact size in the base unit of its kind as a
+	 * rational. The key is named 'mm' for history: it holds millimetres for
+	 * length units and grams for mass units ('dim' => 'mass').
+	 * The inch is exactly 25.4 mm = 127/5 and the pound exactly 0.45359237 kg
+	 * (NIST SP 811, Appendix B.9). The ounce is 1/16 pound.
 	 */
 	public static function units() {
 		$units = array(
@@ -30,8 +33,18 @@ class DV_Math {
 			'm'  => array( 'mm' => array( 1000, 1 ),  'short' => 'm',  'name' => 'meters',      'one' => 'meter' ),
 			'in' => array( 'mm' => array( 127, 5 ),   'short' => 'in', 'name' => 'inches',      'one' => 'inch' ),
 			'ft' => array( 'mm' => array( 1524, 5 ),  'short' => 'ft', 'name' => 'feet',        'one' => 'foot' ),
+			'g'  => array( 'mm' => array( 1, 1 ),     'short' => 'g',  'name' => 'grams',       'one' => 'gram',     'dim' => 'mass' ),
+			'kg' => array( 'mm' => array( 1000, 1 ),  'short' => 'kg', 'name' => 'kilograms',   'one' => 'kilogram', 'dim' => 'mass' ),
+			'lb' => array( 'mm' => array( 45359237, 100000 ),  'short' => 'lb', 'name' => 'pounds', 'one' => 'pound', 'dim' => 'mass' ),
+			'oz' => array( 'mm' => array( 45359237, 1600000 ), 'short' => 'oz', 'name' => 'ounces', 'one' => 'ounce', 'dim' => 'mass' ),
 		);
 		return apply_filters( 'dv_converters_units', $units );
+	}
+
+	/** 'len' or 'mass'. */
+	public static function dim( $key ) {
+		$u = self::unit( $key );
+		return $u && ! empty( $u['dim'] ) ? $u['dim'] : 'len';
 	}
 
 	public static function unit( $key ) {
@@ -87,7 +100,7 @@ class DV_Math {
 	 */
 	public static function parse( $raw ) {
 		$s = strtolower( trim( (string) $raw ) );
-		$s = str_replace( array( '⁄', '″', '"', '”', 'inches', 'inch', 'in', 'mm', 'cm' ), array( '/', '', '', '', '', '', '', '', '' ), $s );
+		$s = str_replace( array( '⁄', '″', '"', '”', 'inches', 'inch', 'in', 'mm', 'cm', 'kg', 'lbs', 'lb', 'oz', 'g' ), array( '/', '', '', '', '', '', '', '', '', '', '', '', '', '' ), $s );
 		$s = trim( $s );
 		if ( '' === $s ) {
 			return null;
@@ -119,7 +132,7 @@ class DV_Math {
 	public static function convert( $r, $from, $to ) {
 		$f = self::unit( $from );
 		$t = self::unit( $to );
-		if ( ! $f || ! $t ) {
+		if ( ! $f || ! $t || self::dim( $from ) !== self::dim( $to ) ) {
 			return null;
 		}
 		return self::div( self::mul( $r, $f['mm'] ), $t['mm'] );
@@ -154,8 +167,9 @@ class DV_Math {
 	}
 
 	/** Shortest exact decimal if one exists within MAX_DP places, else null. */
-	public static function exact_decimal( $r ) {
-		for ( $dp = 0; $dp <= self::MAX_DP; $dp++ ) {
+	public static function exact_decimal( $r, $max_dp = null ) {
+		$max_dp = null === $max_dp ? self::MAX_DP : $max_dp;
+		for ( $dp = 0; $dp <= $max_dp; $dp++ ) {
 			$d = self::decimal( $r, $dp );
 			if ( $d['exact'] ) {
 				return $d['text'];

@@ -87,7 +87,7 @@ class DV_Render {
 			// Main tool page: state the exact definition first.
 			$one_to   = DV_Math::convert( array( 1, 1 ), $a['to'], $a['from'] );
 			$one_from = DV_Math::convert( array( 1, 1 ), $a['from'], $a['to'] );
-			$ex_to    = DV_Math::exact_decimal( $one_to );
+			$ex_to    = DV_Math::exact_decimal( $one_to, 9 );
 			if ( null !== $ex_to ) {
 				list( $s, $t ) = self::dec_with_sign( $one_from, 5, $to['short'] );
 				$main = sprintf( '1 %s = %s %s', $to['one'], $ex_to, $from['short'] );
@@ -96,8 +96,13 @@ class DV_Render {
 					__( 'Exactly, by definition · 1 %1$s %2$s %3$s · %4$s = %5$s ÷ %6$s', 'dv-converters' ),
 					$from['short'], $s, $t, $to['name'], $from['name'], $ex_to
 				);
+			} elseif ( null === DV_Math::exact_decimal( $one_from, 9 ) && ! empty( $a['pair']['defn'] ) ) {
+				// Neither direction terminates (kg and lb): state the defining factor.
+				list( $s, $t ) = self::dec_with_sign( $one_from, 4, $to['short'] );
+				$main = sprintf( '1 %s %s %s', $from['short'], $s, $t );
+				$note = $a['pair']['defn'] . ' (NIST SP 811)';
 			} else {
-				$ex_from        = DV_Math::exact_decimal( $one_from );
+				$ex_from        = DV_Math::exact_decimal( $one_from, 9 );
 				list( $s, $t )  = self::dec_with_sign( $one_to, 5, $from['short'] );
 				$main = sprintf( '1 %s = %s %s', $from['one'], $ex_from, $to['short'] );
 				$note = sprintf(
@@ -150,6 +155,10 @@ class DV_Render {
 			$note = esc_html__( 'Exact, because 1 foot is defined as exactly 0.3048 m', 'dv-converters' );
 		} elseif ( null !== $ex && ( 'in' === $a['from'] || 'in' === $a['to'] ) ) {
 			$note = esc_html__( 'Exact, because 1 inch is defined as exactly 25.4 mm', 'dv-converters' );
+		} elseif ( null !== $ex && 'mass' === DV_Math::dim( $a['from'] ) && ! empty( $a['pair']['defn'] ) ) {
+			$note = esc_html( 'Exact, because ' . $a['pair']['defn'] );
+		} elseif ( null === $ex && 'mass' === DV_Math::dim( $a['from'] ) && ! empty( $a['pair']['defn'] ) ) {
+			$note = esc_html( sprintf( /* translators: 1: decimals, 2: definition */ __( 'Rounded to %1$d decimal places. %2$s (NIST SP 811)', 'dv-converters' ), $a['dp'], ucfirst( $a['pair']['defn'] ) ) );
 		} elseif ( null !== $ex ) {
 			$note = esc_html__( 'Exact', 'dv-converters' );
 		} else {
@@ -189,6 +198,18 @@ class DV_Render {
 				);
 			}
 		}
+		if ( 'lb' === $to ) {
+			// Pounds and ounces, e.g. 44 lb 1.5 oz.
+			$oz   = DV_Math::mul( $res, array( 16, 1 ) );
+			$whole = intdiv( $oz[0], 16 * $oz[1] );
+			$rest  = DV_Math::reduce( $oz[0] - $whole * 16 * $oz[1], $oz[1] );
+			$d     = DV_Math::decimal( $rest, 1 );
+			if ( '16' === $d['text'] ) { // Rounds up to a whole pound.
+				$whole++;
+				$d = array( 'text' => '0', 'exact' => false );
+			}
+			$rows[] = array( esc_html__( 'Pounds and ounces', 'dv-converters' ), '<b>' . esc_html( ( $d['exact'] ? '' : '≈ ' ) . number_format( $whole, 0, '.', ',' ) . ' lb ' . $d['text'] . ' oz' ) . '</b>' );
+		}
 		$o = '<dl class="dv-r">';
 		foreach ( $rows as $row ) {
 			$o .= '<div><dt>' . $row[0] . '</dt><dd>' . $row[1] . '</dd></div>';
@@ -204,8 +225,8 @@ class DV_Render {
 		$a    = self::converter_atts( $atts );
 		$from = DV_Math::unit( $a['from'] );
 		$to   = DV_Math::unit( $a['to'] );
-		if ( ! $from || ! $to ) {
-			return current_user_can( 'edit_posts' ) ? '<p><strong>[dv_converter]</strong> unknown unit.</p>' : '';
+		if ( ! $from || ! $to || DV_Math::dim( $a['from'] ) !== DV_Math::dim( $a['to'] ) ) {
+			return current_user_can( 'edit_posts' ) ? '<p><strong>[dv_converter]</strong> unknown unit or units of different kinds.</p>' : '';
 		}
 		$id    = 'dv-conv-' . ( ++self::$uid );
 		$ans   = self::answer( $a );
@@ -432,11 +453,14 @@ class DV_Render {
 		);
 		$nist = apply_filters( 'dv_converters_nist_url', 'https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b9' );
 		$o    = '<aside class="dv-facts"><p>';
-		$msg  = 'foot' === $a['basis']
+		$msg  = 'pound' === $a['basis']
+			/* translators: %s: link to NIST */
+			? __( 'How the numbers work: 1 pound is defined as exactly 0.45359237 kg (%s), so every result here is calculated from that factor with exact arithmetic.', 'dv-converters' )
+			: ( 'foot' === $a['basis']
 			/* translators: %s: link to NIST */
 			? __( 'How the numbers work: 1 foot is defined as exactly 0.3048 m, which is 12 inches of 25.4 mm each (%s), so every result here is calculated from that factor with exact arithmetic.', 'dv-converters' )
 			/* translators: %s: link to NIST */
-			: __( 'How the numbers work: 1 inch is defined as exactly 25.4 mm (%s), so every result here is calculated from that factor with exact arithmetic.', 'dv-converters' );
+			: __( 'How the numbers work: 1 inch is defined as exactly 25.4 mm (%s), so every result here is calculated from that factor with exact arithmetic.', 'dv-converters' ) );
 		$o   .= wp_kses(
 			sprintf(
 				$msg,
