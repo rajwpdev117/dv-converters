@@ -1,0 +1,25 @@
+name: Release
+# Push a tag like v1.2.0 (or run manually) to build the plugin zip and publish a GitHub Release.
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check tag matches plugin version
+        run: |
+          V=$(grep -m1 -oP 'Version:\s*\K[0-9.]+' dv-converters.php)
+          [ "v$V" = "${GITHUB_REF_NAME}" ] || { echo "Tag ${GITHUB_REF_NAME} != plugin version v$V"; exit 1; }
+      - name: Build zip
+        run: |
+          mkdir -p /tmp/pkg/dv-converters
+          rsync -a --exclude='.git' --exclude='.github' --exclude='README.md' ./ /tmp/pkg/dv-converters/
+          (cd /tmp/pkg && zip -rq "$GITHUB_WORKSPACE/dv-converters.zip" dv-converters)
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dv-converters.zip --title "$GITHUB_REF_NAME" --generate-notes
