@@ -149,6 +149,9 @@ class DV_Render {
 
 		list( $s, $t ) = self::dec_with_sign( $res, $a['dp'], $to['short'] );
 		$ex   = DV_Math::exact_decimal( $res );
+		if ( null !== $ex ) {
+			$s = '='; // The full exact value is shown, so use the equals sign.
+		}
 		$main = sprintf( '%s %s <b>%s</b>', esc_html( $in_text ), $s, esc_html( null !== $ex ? $ex . ' ' . $to['short'] : $t ) );
 		$is_ft = 'ft' === $a['from'] || 'ft' === $a['to'];
 		if ( null !== $ex && $is_ft ) {
