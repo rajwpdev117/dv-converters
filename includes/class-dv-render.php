@@ -116,6 +116,9 @@ class DV_Render {
 
 		$in_text = self::value_text( $r, $a['from'] );
 		$res     = DV_Math::convert( $r, $a['from'], $a['to'] );
+		if ( null === $res ) {
+			return array( 'main' => esc_html__( 'Value too large for this converter', 'dv-converters' ), 'note' => '' );
+		}
 
 		if ( 'in' === $a['to'] ) {
 			$dens          = $a['fractions'] ? $a['fractions'] : array( 16, 32, 64 );
@@ -154,14 +157,16 @@ class DV_Render {
 		}
 		$main = sprintf( '%s %s <b>%s</b>', esc_html( $in_text ), $s, esc_html( null !== $ex ? $ex . ' ' . $to['short'] : $t ) );
 		$is_ft = 'ft' === $a['from'] || 'ft' === $a['to'];
+		// Definition text: a pair's own (kg and lb), else the first unit that carries one (yd, mi, ac, ft2).
+		$defn = ! empty( $a['pair']['defn'] ) ? $a['pair']['defn'] : ( ! empty( $from['defn'] ) ? $from['defn'] : ( ! empty( $to['defn'] ) ? $to['defn'] : '' ) );
 		if ( null !== $ex && $is_ft ) {
 			$note = esc_html__( 'Exact, because 1 foot is defined as exactly 0.3048 m', 'dv-converters' );
 		} elseif ( null !== $ex && ( 'in' === $a['from'] || 'in' === $a['to'] ) ) {
 			$note = esc_html__( 'Exact, because 1 inch is defined as exactly 25.4 mm', 'dv-converters' );
-		} elseif ( null !== $ex && 'mass' === DV_Math::dim( $a['from'] ) && ! empty( $a['pair']['defn'] ) ) {
-			$note = esc_html( 'Exact, because ' . $a['pair']['defn'] );
-		} elseif ( null === $ex && 'mass' === DV_Math::dim( $a['from'] ) && ! empty( $a['pair']['defn'] ) ) {
-			$note = esc_html( sprintf( /* translators: 1: decimals, 2: definition */ __( 'Rounded to %1$d decimal places. %2$s (NIST SP 811)', 'dv-converters' ), $a['dp'], ucfirst( $a['pair']['defn'] ) ) );
+		} elseif ( null !== $ex && '' !== $defn ) {
+			$note = esc_html( 'Exact, because ' . $defn );
+		} elseif ( null === $ex && '' !== $defn ) {
+			$note = esc_html( sprintf( /* translators: 1: decimals, 2: definition */ __( 'Rounded to %1$d decimal places. %2$s (NIST SP 811)', 'dv-converters' ), $a['dp'], ucfirst( $defn ) ) );
 		} elseif ( null !== $ex ) {
 			$note = esc_html__( 'Exact', 'dv-converters' );
 		} else {
@@ -176,6 +181,9 @@ class DV_Render {
 			return '<p class="dv-r__err">' . esc_html__( 'Enter a number such as 8, 8.5 or 5/16.', 'dv-converters' ) . '</p>';
 		}
 		$res  = DV_Math::convert( $r, $from, $to );
+		if ( null === $res ) {
+			return '<p class="dv-r__err">' . esc_html__( 'That number is too large. Try a smaller one.', 'dv-converters' ) . '</p>';
+		}
 		$u    = DV_Math::unit( $to );
 		$name = self::value_text( $r, $from );
 		list( $s, $t ) = self::dec_with_sign( $res, $dp, $u['short'] );
@@ -384,6 +392,9 @@ class DV_Render {
 
 		foreach ( $values as $v ) {
 			$res   = DV_Math::convert( $v, $fk, $tk );
+			if ( null === $res ) {
+				continue; // Too large for exact math.
+			}
 			$label = self::value_text( $v, $fk );
 			$key   = DV_Math::exact_decimal( $v );
 			$is_hl = $hl && $hl[0] === $v[0] && $hl[1] === $v[1];

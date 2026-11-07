@@ -2,7 +2,7 @@
 Contributors: rajeshkumar-dv
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.2.0
 License: GPL-2.0-or-later
 
 Server-rendered measurement converters: answer box (fraction first), live converter,
@@ -114,6 +114,12 @@ dv_converters_no_sidebar, dv_converters_no_toc, dv_converters_drop_article_schem
 == 1.0.5 ==
 
 - Restores the GitHub updater that was dropped from 1.0.3 and 1.0.4. Install this version once by upload; later versions update from the WordPress Updates screen.
+
+== 1.2.0 ==
+
+- New length units: kilometers (km), yards (yd), miles (mi). 1 yard = exactly 0.9144 m; 1 mile = exactly 1,609.344 m.
+- New area units: square feet (ft2), square meters (m2), acres (ac). 1 acre = exactly 43,560 ft² = 4,046.8564224 m².
+- The answer box states the definition for these units. [dv_scale] stays length-only.
 
 == 1.1.2 ==
 * Fix: the answer box showed "≈" next to a value that was displayed exactly (for example 6,000 lb = 2,721.55422 kg). It now shows "=" whenever the full exact value is shown.

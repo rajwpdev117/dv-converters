@@ -137,7 +137,7 @@ class DV_Scale {
 		$unit = sanitize_key( $a['unit'] );
 		$u    = DV_Math::unit( $unit );
 		$r    = DV_Math::parse( $a['value'] );
-		if ( ! $u || ! $r || 0 === $r[0] ) {
+		if ( ! $u || 'len' !== DV_Math::dim( $unit ) || ! $r || 0 === $r[0] ) {
 			return current_user_can( 'edit_posts' ) ? '<p><strong>[dv_scale]</strong> check value and unit.</p>' : '';
 		}
 		$mm = DV_Math::convert( $r, $unit, 'mm' );

@@ -12,10 +12,17 @@
 		m: { mm: [1000n, 1n], short: 'm', name: 'meters' },
 		in: { mm: [127n, 5n], short: 'in', name: 'inches' },
 		ft: { mm: [1524n, 5n], short: 'ft', name: 'feet' },
+		km: { mm: [1000000n, 1n], short: 'km', name: 'kilometers' },
+		yd: { mm: [4572n, 5n], short: 'yd', name: 'yards' },
+		mi: { mm: [1609344n, 1n], short: 'mi', name: 'miles' },
 		g: { mm: [1n, 1n], short: 'g', name: 'grams', dim: 'mass' },
 		kg: { mm: [1000n, 1n], short: 'kg', name: 'kilograms', dim: 'mass' },
 		lb: { mm: [45359237n, 100000n], short: 'lb', name: 'pounds', dim: 'mass' },
-		oz: { mm: [45359237n, 1600000n], short: 'oz', name: 'ounces', dim: 'mass' }
+		oz: { mm: [45359237n, 1600000n], short: 'oz', name: 'ounces', dim: 'mass' },
+		/* Area units hold square feet in the mm key, as in class-dv-math.php. */
+		ft2: { mm: [1n, 1n], short: 'ft²', name: 'square feet', dim: 'area' },
+		m2: { mm: [1562500n, 145161n], short: 'm²', name: 'square meters', dim: 'area' },
+		ac: { mm: [43560n, 1n], short: 'ac', name: 'acres', dim: 'area' }
 	};
 	var MAX_DP = 6;
 	var MAX_VALUE = 100000n;

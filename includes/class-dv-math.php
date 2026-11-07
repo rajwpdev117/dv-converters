@@ -22,7 +22,7 @@ class DV_Math {
 	/**
 	 * Units, each defined by its exact size in the base unit of its kind as a
 	 * rational. The key is named 'mm' for history: it holds millimetres for
-	 * length units and grams for mass units ('dim' => 'mass').
+	 * length units and grams for mass units ('dim' => 'mass') and square feet for area units ('dim' => 'area').
 	 * The inch is exactly 25.4 mm = 127/5 and the pound exactly 0.45359237 kg
 	 * (NIST SP 811, Appendix B.9). The ounce is 1/16 pound.
 	 */
@@ -33,15 +33,23 @@ class DV_Math {
 			'm'  => array( 'mm' => array( 1000, 1 ),  'short' => 'm',  'name' => 'meters',      'one' => 'meter' ),
 			'in' => array( 'mm' => array( 127, 5 ),   'short' => 'in', 'name' => 'inches',      'one' => 'inch' ),
 			'ft' => array( 'mm' => array( 1524, 5 ),  'short' => 'ft', 'name' => 'feet',        'one' => 'foot' ),
+			'km' => array( 'mm' => array( 1000000, 1 ), 'short' => 'km', 'name' => 'kilometers', 'one' => 'kilometer' ),
+			'yd' => array( 'mm' => array( 4572, 5 ), 'short' => 'yd', 'name' => 'yards', 'one' => 'yard', 'defn' => '1 yard is defined as exactly 0.9144 m' ),
+			'mi' => array( 'mm' => array( 1609344, 1 ), 'short' => 'mi', 'name' => 'miles', 'one' => 'mile', 'defn' => '1 mile is defined as exactly 1,609.344 m' ),
 			'g'  => array( 'mm' => array( 1, 1 ),     'short' => 'g',  'name' => 'grams',       'one' => 'gram',     'dim' => 'mass' ),
 			'kg' => array( 'mm' => array( 1000, 1 ),  'short' => 'kg', 'name' => 'kilograms',   'one' => 'kilogram', 'dim' => 'mass' ),
 			'lb' => array( 'mm' => array( 45359237, 100000 ),  'short' => 'lb', 'name' => 'pounds', 'one' => 'pound', 'dim' => 'mass' ),
 			'oz' => array( 'mm' => array( 45359237, 1600000 ), 'short' => 'oz', 'name' => 'ounces', 'one' => 'ounce', 'dim' => 'mass' ),
+			// Area units hold square feet in the 'mm' key: 1 m² = 1562500/145161 ft² (1 ft = exactly 0.3048 m),
+			// 1 acre = 43,560 ft². Kept in square feet so integer math stays inside 64 bits.
+			'ft2' => array( 'mm' => array( 1, 1 ),         'short' => 'ft²', 'name' => 'square feet',   'one' => 'square foot',  'dim' => 'area', 'defn' => '1 square foot is exactly 0.09290304 m²' ),
+			'm2'  => array( 'mm' => array( 1562500, 145161 ), 'short' => 'm²',  'name' => 'square meters', 'one' => 'square meter', 'dim' => 'area' ),
+			'ac'  => array( 'mm' => array( 43560, 1 ),     'short' => 'ac',  'name' => 'acres',         'one' => 'acre',         'dim' => 'area', 'defn' => '1 acre is defined as exactly 43,560 square feet (4,046.8564224 m²)' ),
 		);
 		return apply_filters( 'dv_converters_units', $units );
 	}
 
-	/** 'len' or 'mass'. */
+	/** 'len', 'mass' or 'area'. */
 	public static function dim( $key ) {
 		$u = self::unit( $key );
 		return $u && ! empty( $u['dim'] ) ? $u['dim'] : 'len';
@@ -80,10 +88,15 @@ class DV_Math {
 		// Cross-reduce first to keep numbers small.
 		$g1 = self::gcd( $a[0], $b[1] );
 		$g2 = self::gcd( $b[0], $a[1] );
-		return self::reduce(
-			intdiv( $a[0], $g1 ) * intdiv( $b[0], $g2 ),
-			intdiv( $a[1], $g2 ) * intdiv( $b[1], $g1 )
-		);
+		$n1 = intdiv( $a[0], $g1 );
+		$n2 = intdiv( $b[0], $g2 );
+		$d1 = intdiv( $a[1], $g2 );
+		$d2 = intdiv( $b[1], $g1 );
+		// Refuse to overflow 64-bit integers, which would silently turn into floats.
+		if ( abs( (float) $n1 * (float) $n2 ) > 9.0e18 || abs( (float) $d1 * (float) $d2 ) > 9.0e18 ) {
+			throw new OverflowException( 'DV_Math: value too large' );
+		}
+		return self::reduce( $n1 * $n2, $d1 * $d2 );
 	}
 
 	public static function div( $a, $b ) {
@@ -128,14 +141,18 @@ class DV_Math {
 		return $r;
 	}
 
-	/** Convert a rational value between two unit keys. */
+	/** Convert a rational value between two unit keys. Null for unknown or mixed units, or when the value is too large. */
 	public static function convert( $r, $from, $to ) {
 		$f = self::unit( $from );
 		$t = self::unit( $to );
 		if ( ! $f || ! $t || self::dim( $from ) !== self::dim( $to ) ) {
 			return null;
 		}
-		return self::div( self::mul( $r, $f['mm'] ), $t['mm'] );
+		try {
+			return self::div( self::mul( $r, $f['mm'] ), $t['mm'] );
+		} catch ( OverflowException $e ) {
+			return null; // Input too large for exact math; callers show a message.
+		}
 	}
 
 	/* ------------------------------------------------------------------ */
