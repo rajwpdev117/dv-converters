@@ -460,11 +460,16 @@ class DV_Render {
 			array(
 				'updated'   => '',
 				'basis'     => 'inch',
-				'precision' => __( 'Decimals are rounded to 4 places in the converter and 3 in the chart; fractions go to the nearest 1/64″.', 'dv-converters' ),
+				'precision' => '',
 			),
 			$atts,
 			'dv_facts'
 		);
+			if ( '' === $a['precision'] ) {
+				$a['precision'] = 'pound' === $a['basis']
+					? __( 'Decimals are rounded to 4 places in the converter and 3 in the chart.', 'dv-converters' )
+					: __( 'Decimals are rounded to 4 places in the converter and 3 in the chart; fractions go to the nearest 1/64″.', 'dv-converters' );
+			}
 		$nist = apply_filters( 'dv_converters_nist_url', 'https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b9' );
 		$o    = '<aside class="dv-facts"><p>';
 		$msg  = 'pound' === $a['basis']
